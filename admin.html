@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Dunia Cerita Anak</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+      min-height: 100vh;
+    }
+
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Fredoka', cursive;
+    }
+
+    /* Drag & Drop Visual Effects */
+    .draggable-item {
+      cursor: grab;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .draggable-item:active {
+      cursor: grabbing;
+    }
+    .draggable-item.dragging {
+      opacity: 0.4;
+      transform: scale(0.98);
+      border: 2px dashed #f59e0b;
+    }
+    .drag-over {
+      border-top: 4px solid #f59e0b !important;
+    }
+
+    /* Custom Scrollbars */
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 8px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 8px;
+    }
+
+    /* Toast Notification Animation */
+    @keyframes toastIn {
+      from { transform: translateY(100%) scale(0.9); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .toast-animate {
+      animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- Top Navigation Bar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Logo & Title -->
+      <div class="flex items-center space-x-3">
+        <div class="bg-gradient-to-tr from-amber-400 to-orange-500 text-white p-2.5 rounded-2xl shadow-md">
+          <i class="fa-solid fa-sliders text-xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-bold font-heading text-slate-800">Panel Kelola Admin</h1>
+            <span class="bg-amber-100 text-amber-700 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
+              Mode Akses Langsung
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 font-medium">Pengaturan Etalase Buku Digital Nusantara Kids</p>
+        </div>
+      </div>
+
+      <!-- Quick Header Actions -->
+      <div class="flex items-center space-x-3">
+        <a href="index.html" class="flex items-center gap-2 px-4 py-2 bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-sm">
+          <i class="fa-solid fa-store"></i>
+          <span>Lihat Etalase Utama</span>
+        </a>
+
+        <button id="btn-reset-data" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all" title="Reset Data Ke Default">
+          <i class="fa-solid fa-rotate text-base"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+    
+    <!-- Tab Navigation Buttons -->
+    <div class="bg-white p-2 rounded-3xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-2 overflow-x-auto">
+      
+      <button class="tab-btn flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm transition-all bg-amber-400 text-slate-900 shadow-md" data-tab="tab-form">
+        <i class="fa-solid fa-plus-circle"></i>
+        <span>Tambah & Edit Cerita</span>
+      </button>
+
+      <button class="tab-btn flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition-all" data-tab="tab-reorder">
+        <i class="fa-solid fa-up-down-left-right"></i>
+        <span>Atur Posisi Etalase (Drag & Drop)</span>
+      </button>
+
+      <button class="tab-btn flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition-all" data-tab="tab-widgets">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <span>Kelola Widget & Banner</span>
+      </button>
+
+      <button class="tab-btn flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm text-slate-600 hover:bg-slate-100 transition-all" data-tab="tab-list">
+        <i class="fa-solid fa-book-open text-slate-500"></i>
+        <span>Daftar Koleksi Buku (<span id="count-badge-books">0</span>)</span>
+      </button>
+
+    </div>
+
+
+    <!-- TAB 1: STORY BUILDER FORM -->
+    <section id="tab-form" class="tab-content space-y-6">
+      
+      <div class="flex justify-between items-center bg-amber-50 p-4 rounded-3xl border border-amber-200">
+        <div class="flex items-center gap-3">
+          <i class="fa-solid fa-pen-nib text-amber-600 text-xl"></i>
+          <div>
+            <h3 class="text-lg font-bold font-heading text-slate-800" id="form-mode-title">Buat Buku Cerita Baru</h3>
+            <p class="text-xs text-slate-600">Isi detail cerita dan tambahkan halaman lembaran flipbook secara interaktif.</p>
+          </div>
+        </div>
+
+        <button id="btn-clear-form" class="hidden px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition-all">
+          <i class="fa-solid fa-xmark mr-1"></i> Batal Edit
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Form Left Column: Metadata & Pages -->
+        <form id="story-form" class="lg:col-span-7 space-y-6">
+          <input type="hidden" id="book-edit-id" value="">
+
+          <!-- General Book Details -->
+          <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
+            <h4 class="text-base font-bold font-heading text-slate-800 pb-2 border-b border-slate-100">
+              1. Informasi Umum Buku
+            </h4>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-bold text-slate-700 mb-1">Judul Buku Cerita *</label>
+                <input type="text" id="input-title" required placeholder="Contoh: Si Miko yang Bernasib Baik"
+                       class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Nama Penulis / Pengarang *</label>
+                <input type="text" id="input-author" required placeholder="Contoh: Kak Bambang"
+                       class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Kategori Cerita *</label>
+                <select id="input-category" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+                  <option value="Hewan">Hewan</option>
+                  <option value="Petualangan">Petualangan</option>
+                  <option value="Persahabatan">Persahabatan</option>
+                  <option value="Edukasi">Edukasi</option>
+                  <option value="Dongeng">Dongeng</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Target Usia *</label>
+                <select id="input-age" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+                  <option value="3-6 Tahun">3 - 6 Tahun</option>
+                  <option value="6-9 Tahun">6 - 9 Tahun</option>
+                  <option value="9-12 Tahun">9 - 12 Tahun</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Estimasi Waktu Baca *</label>
+                <input type="text" id="input-readtime" required placeholder="Contoh: 5 Menit" value="5 Menit"
+                       class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+              </div>
+
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-bold text-slate-700 mb-1">Warna Tema / Sampul *</label>
+                <div class="flex items-center gap-3">
+                  <input type="color" id="input-cover-color" value="#fef3c7" class="h-10 w-16 rounded-xl cursor-pointer border border-slate-200 p-1">
+                  <span class="text-xs text-slate-500">Pilih warna dasar untuk sampul dan ilustrasi default.</span>
+                </div>
+              </div>
+
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-bold text-slate-700 mb-1">Sinopsis / Ringkasan Cerita *</label>
+                <textarea id="input-synopsis" rows="3" required placeholder="Tuliskan ringkasan singkat yang menarik minat anak-anak..."
+                          class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"></textarea>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- Dynamic Page Editor -->
+          <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+              <h4 class="text-base font-bold font-heading text-slate-800">
+                2. Lembaran Halaman Cerita
+              </h4>
+              <button type="button" id="btn-add-page" class="px-3 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1">
+                <i class="fa-solid fa-plus"></i> Tambah Halaman
+              </button>
+            </div>
+
+            <p class="text-xs text-slate-500">Halaman 1 akan otomatis menjadi Sampul Depan, dan halaman terakhir akan menjadi Sampul Belakang.</p>
+
+            <div id="pages-container" class="space-y-4">
+              <!-- Dynamically Populated Page Cards -->
+            </div>
+          </div>
+
+          <!-- Submit Action -->
+          <button type="submit" class="w-full py-4 bg-amber-400 hover:bg-amber-500 active:scale-98 text-slate-900 font-extrabold rounded-2xl shadow-lg transition-all text-base flex items-center justify-center gap-2">
+            <i class="fa-solid fa-floppy-disk text-lg"></i>
+            <span>Simpan Buku Cerita ke Etalase</span>
+          </button>
+        </form>
+
+        <!-- Live Preview Card (Right Column) -->
+        <div class="lg:col-span-5">
+          <div class="sticky top-24 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+              <h4 class="text-base font-bold font-heading text-slate-800">
+                <i class="fa-solid fa-eye text-amber-500 mr-1"></i> Preview Tampilan Card
+              </h4>
+              <span class="text-[10px] font-bold bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full">Real-time</span>
+            </div>
+
+            <!-- Card Shell -->
+            <div class="bg-white rounded-3xl p-4 shadow-md border border-slate-200 flex flex-col justify-between max-w-sm mx-auto">
+              <div>
+                <div id="preview-cover-box" class="relative w-full h-44 rounded-2xl overflow-hidden mb-4 flex justify-center items-center border border-slate-100 transition-colors" style="background-color: #fef3c7;">
+                  
+                  <div class="text-center p-3">
+                    <span id="preview-category-badge" class="bg-amber-400 text-slate-900 text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-sm mb-2 inline-block">
+                      Hewan
+                    </span>
+                    <h5 id="preview-card-title" class="text-base font-extrabold text-slate-800 font-heading leading-tight">
+                      Judul Buku Preview
+                    </h5>
+                    <p id="preview-card-author" class="text-xs text-slate-500 font-medium">Oleh Penulis</p>
+                  </div>
+
+                  <span class="absolute bottom-2 right-2 text-[10px] bg-white/80 text-slate-600 font-bold px-2 py-0.5 rounded-md">
+                    <i class="fa-solid fa-book text-amber-500"></i> <span id="preview-pages-count">3 Halaman</span>
+                  </span>
+                </div>
+
+                <p id="preview-card-synopsis" class="text-xs text-slate-600 line-clamp-3 mb-4 leading-relaxed">
+                  Ringkasan cerita akan tampil secara otomatis di sini saat Anda mengetikkan pada form di samping...
+                </p>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between text-[11px] font-semibold text-slate-500 pt-2 border-t border-slate-100">
+                  <span><i class="fa-solid fa-child text-sky-500"></i> <span id="preview-card-age">3-6 Tahun</span></span>
+                  <span><i class="fa-solid fa-clock text-emerald-500"></i> <span id="preview-card-time">5 Menit</span></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-sky-50 p-3.5 rounded-2xl border border-sky-100 text-xs text-sky-800 flex items-start gap-2.5">
+              <i class="fa-solid fa-lightbulb text-sky-500 text-base mt-0.5"></i>
+              <p>Perubahan yang disimpan akan langsung tersinkronisasi dengan halaman pengunjung melalui LocalStorage browser.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- TAB 2: REORDER SHELF (DRAG & DROP) -->
+    <section id="tab-reorder" class="tab-content hidden space-y-6">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-sky-50 p-4 rounded-3xl border border-sky-200 gap-4">
+        <div class="flex items-center gap-3">
+          <i class="fa-solid fa-up-down-left-right text-sky-600 text-xl"></i>
+          <div>
+            <h3 class="text-lg font-bold font-heading text-slate-800">Atur Urutan Tampilan Etalase</h3>
+            <p class="text-xs text-slate-600">Geser (Drag & Drop) kartu buku untuk mengubah posisi kemunculannya di halaman utama.</p>
+          </div>
+        </div>
+
+        <button id="btn-save-positions" class="px-5 py-2.5 bg-sky-500 hover:bg-sky-600 active:scale-95 text-white font-bold rounded-2xl shadow-md text-xs sm:text-sm transition-all flex items-center gap-2">
+          <i class="fa-solid fa-floppy-disk"></i>
+          <span>Simpan Urutan Baru</span>
+        </button>
+      </div>
+
+      <!-- Drag & Drop Grid -->
+      <div id="reorder-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Dynamically Rendered Reorder Items -->
+      </div>
+
+    </section>
+
+
+    <!-- TAB 3: WIDGET & BANNER MANAGER -->
+    <section id="tab-widgets" class="tab-content hidden space-y-6">
+      
+      <div class="bg-purple-50 p-4 rounded-3xl border border-purple-200 flex items-center gap-3">
+        <i class="fa-solid fa-wand-magic-sparkles text-purple-600 text-xl"></i>
+        <div>
+          <h3 class="text-lg font-bold font-heading text-slate-800">Pengaturan Widget & Banner Promosi</h3>
+          <p class="text-xs text-slate-600">Aktifkan atau nonaktifkan fitur tambahan pada etalase depan.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Hero Spotlight Banner Settings -->
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+            <h4 class="text-base font-bold font-heading text-slate-800">
+              1. Banner Utama (Hero Spotlight)
+            </h4>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="widget-hero-active" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-400"></div>
+            </label>
+          </div>
+
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Tag Headline / Badge</label>
+              <input type="text" id="widget-hero-tag" value="🌟 Buku Utama Hari Ini" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Judul Spotlight Cerita</label>
+              <input type="text" id="widget-hero-title" value="Si Miko yang Bernasib Baik" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Deskripsi Singkat Banner</label>
+              <textarea id="widget-hero-desc" rows="2" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">Ikuti kisah haru Miko, kucing mungil di pinggir jalan yang kelaparan, dan bagaimana pertolongan ramah seorang anak merubah hidupnya!</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- System & Audio Defaults -->
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
+          <h4 class="text-base font-bold font-heading text-slate-800 pb-2 border-b border-slate-100">
+            2. Pengaturan Suara & Fitur Default
+          </h4>
+
+          <div class="space-y-4">
+            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl">
+              <div>
+                <p class="text-xs font-bold text-slate-800">Efek Suara UI Default</p>
+                <p class="text-[11px] text-slate-500">Bunyi klik dan balik halaman aktif otomatis.</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="widget-sound-default" class="sr-only peer" checked>
+                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-400"></div>
+              </label>
+            </div>
+
+            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl">
+              <div>
+                <p class="text-xs font-bold text-slate-800">Narasi Suara Otomatis (TTS)</p>
+                <p class="text-[11px] text-slate-500">Mulai membaca narasi otomatis saat halaman dibuka.</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="widget-tts-default" class="sr-only peer" checked>
+                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-400"></div>
+              </label>
+            </div>
+
+            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl">
+              <div>
+                <p class="text-xs font-bold text-slate-800">Tampilkan Jumlah Favorit Pengunjung</p>
+                <p class="text-[11px] text-slate-500">Tampilkan counter suka pada koleksi cerita.</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="widget-favs-visible" class="sr-only peer" checked>
+                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-400"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="flex justify-end">
+        <button id="btn-save-widgets" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white font-bold rounded-2xl shadow-md text-sm transition-all flex items-center gap-2">
+          <i class="fa-solid fa-floppy-disk"></i>
+          <span>Simpan Pengaturan Widget</span>
+        </button>
+      </div>
+
+    </section>
+
+
+    <!-- TAB 4: BOOKS COLLECTION TABLE LIST -->
+    <section id="tab-list" class="tab-content hidden space-y-6">
+      
+      <div class="flex justify-between items-center bg-slate-100 p-4 rounded-3xl border border-slate-200">
+        <div>
+          <h3 class="text-lg font-bold font-heading text-slate-800">Koleksi Terdaftar</h3>
+          <p class="text-xs text-slate-600">Daftar seluruh buku cerita yang tersimpan pada database local.</p>
+        </div>
+
+        <button id="btn-add-new-from-list" class="px-4 py-2 bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold rounded-xl text-xs transition-all shadow-sm flex items-center gap-1.5">
+          <i class="fa-solid fa-plus"></i> Tambah Cerita Baru
+        </button>
+      </div>
+
+      <!-- Books Table Container -->
+      <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto custom-scroll">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-700 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="px-6 py-4">Buku & Penulis</th>
+                <th class="px-4 py-4">Kategori</th>
+                <th class="px-4 py-4">Target Usia</th>
+                <th class="px-4 py-4">Jumlah Halaman</th>
+                <th class="px-4 py-4">Status Showcase</th>
+                <th class="px-6 py-4 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="table-books-body" class="divide-y divide-slate-100">
+              <!-- Dynamically Populated Table Rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+
+  <!-- TOAST NOTIFICATION STACK -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+      // ================= 1. INITIAL DEFAULT DATA =================
+      const DEFAULT_BOOKS = [
+        {
+          id: 'miko-cat',
+          title: 'Si Miko yang Bernasib Baik',
+          author: 'Kak Bambang',
+          category: 'Hewan',
+          ageGroup: '3-6 Tahun',
+          readTime: '5 Menit',
+          coverBg: '#fef3c7',
+          synopsis: 'Kisah haru dan manis tentang Miko, seekor anak kucing mungil yang kelaparan di pinggir jalan hingga ditemukan oleh Leo yang merawatnya penuh kasih sayang.',
+          visible: true,
+          isFeatured: true,
+          texts: [
+            "Si Miko yang Bernasib Baik. Buku cerita interaktif kisah kasih sayang dan persahabatan.",
+            "Di suatu sore yang dingin, ada seekor anak kucing mungil bernama Miko. Miko duduk sendirian di pinggir jalan dekat kotak kardus tua. Badannya kurus, kotor, dan perutnya berbunyi kencang karena sangat lapar.",
+            "Tak lama kemudian, seorang anak laki-laki bernama Leo melintas sepulang sekolah. Leo mendengar suara meong yang sangat pelan. Leo berlutut dengan senyum lembut dan membelai kepala Miko perlahan.",
+            "Leo membawa Miko ke rumahnya. Dengan penuh kehati-hatian, Leo memandikan Miko menggunakan air hangat dan mengeringkannya dengan handuk lembut. Setelah itu, Leo memberi Miko secangkir susu hangat.",
+            "Beberapa hari berlalu. Miko kini tidak lagi lemas. Bulunya menjadi sangat tebal, bersih, dan halus! Miko dan Leo kini menjadi sahabat sejati.",
+            "Pesan Moral: Kasih sayang dan kebaikan kecil kita dapat mengubah hidup makhluk lain menjadi penuh kebahagiaan. Sayangilah hewan di sekitar kita!"
+          ]
+        },
+        {
+          id: 'kelinci-kiki',
+          title: 'Petualangan Kiki si Kelinci',
+          author: 'Bunda Aulia',
+          category: 'Petualangan',
+          ageGroup: '3-6 Tahun',
+          readTime: '4 Menit',
+          coverBg: '#dcfce7',
+          synopsis: 'Kiki kelinci suka sekali melompat jauh di ladang wortel. Suatu hari Kiki menemukan peta rahasia menuju taman bunga ajaib yang tersembunyi!',
+          visible: true,
+          isFeatured: false,
+          texts: [
+            "Petualangan Kiki si Kelinci. Kisah penjelajahan seru di taman ajaib.",
+            "Kiki adalah kelinci yang sangat lincah. Hobinya melompat tinggi dan mencari wortel segar di ladang pak Tani.",
+            "Suatu pagi, Kiki menemukan selembar peta kecil di bawah pohon oak tua. Peta itu menunjukkan jalan menuju Taman Bunga Pelangi!",
+            "Dengan penuh semangat, Kiki mengajak teman-temannya berpetualang mengikuti petunjuk di peta tersebut. Akhirnya mereka menemukan taman bunga paling indah!",
+            "Pesan Moral: Keberanian dan rasa ingin tahu yang positif akan membawa kita pada petualangan yang menyenangkan bersama teman."
+          ]
+        },
+        {
+          id: 'gajah-pemberani',
+          title: 'Gajah Kecil yang Pemberani',
+          author: 'Ibu Ratna',
+          category: 'Persahabatan',
+          ageGroup: '3-6 Tahun',
+          readTime: '5 Menit',
+          coverBg: '#ffe4e6',
+          synopsis: 'Gani si gajah kecil merasa tidak percaya diri karena telinganya yang sangat lebar. Namun telinga lebarnyalah yang menyelamatkan teman-temannya saat hujan deras.',
+          visible: true,
+          isFeatured: false,
+          texts: [
+            "Gajah Kecil yang Pemberani. Cerita percaya diri dan persahabatan.",
+            "Gani si gajah kecil sering merasa malu karena memiliki telinga yang sangat besar dan lebar dibanding teman-temannya.",
+            "Saat badai tiba di hutan, anak-anak burung kehilangan sarangnya. Gani dengan sigap menggunakan telinga lebarnya sebagai payung perlindungan!",
+            "Semua hewan berterima kasih pada Gani. Gani sadar bahwa setiap kekurangan bisa menjadi kelebihan yang luar biasa.",
+            "Pesan Moral: Hargai dirimu sendiri, karena setiap kita diciptakan istimewa dengan keunikan masing-masing."
+          ]
+        },
+        {
+          id: 'niko-bintang',
+          title: 'Niko dan Bintang Jatuh',
+          author: 'Paman Tariq',
+          category: 'Edukasi',
+          ageGroup: '6-9 Tahun',
+          readTime: '6 Menit',
+          coverBg: '#e0e7ff',
+          synopsis: 'Niko penasaran mengapa bintang berkedip di malam hari. Bersama teropong kecilnya, Niko menjelajahi keajaiban langit malam yang penuh rahasia.',
+          visible: true,
+          isFeatured: false,
+          texts: [
+            "Niko dan Bintang Jatuh. Mengamati keajaiban malam.",
+            "Niko sangat suka melihat langit malam dari jendela kamarnya. Bintang-bintang tampak seperti berlian kecil yang bersinar.",
+            "Suatu malam, sebuah bintang jatuh melintas cepat! Niko membuat permintaan indah untuk kebahagiaan keluarga dan teman-temannya.",
+            "Ayah lalu menjelaskan keandalan ilmu sains tentang benda langit dengan cara yang sangat seru dan mudah dipahami.",
+            "Pesan Moral: Belajar tentang alam semesta membuat kita semakin bersyukur atas indahnya dunia tempat kita tinggal."
+          ]
+        }
+      ];
+
+      const DEFAULT_WIDGETS = {
+        heroActive: true,
+        heroTag: '🌟 Buku Utama Hari Ini',
+        heroTitle: 'Si Miko yang Bernasib Baik',
+        heroDesc: 'Ikuti kisah haru Miko, kucing mungil di pinggir jalan yang kelaparan, dan bagaimana pertolongan ramah seorang anak merubah hidupnya!',
+        soundDefault: true,
+        ttsDefault: true,
+        favsVisible: true
+      };
+
+
+      // ================= 2. STATE STORAGE MANAGEMENT =================
+      let booksData = JSON.parse(localStorage.getItem('nusantara_books_data')) || DEFAULT_BOOKS;
+      let widgetsData = JSON.parse(localStorage.getItem('nusantara_widgets_data')) || DEFAULT_WIDGETS;
+
+      function saveBooksData() {
+        localStorage.setItem('nusantara_books_data', JSON.stringify(booksData));
+        updateBadgesAndCounters();
+      }
+
+      function saveWidgetsData() {
+        localStorage.setItem('nusantara_widgets_data', JSON.stringify(widgetsData));
+      }
+
+      function updateBadgesAndCounters() {
+        document.getElementById('count-badge-books').textContent = booksData.length;
+      }
+
+
+      // ================= 3. TOAST NOTIFICATION SYSTEM =================
+      function showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        
+        const isSuccess = type === 'success';
+        toast.className = `toast-animate pointer-events-auto px-4 py-3 rounded-2xl shadow-xl border text-xs font-bold flex items-center gap-2.5 ${
+          isSuccess ? 'bg-slate-900 text-white border-slate-700' : 'bg-rose-500 text-white border-rose-600'
+        }`;
+
+        toast.innerHTML = `
+          <i class="fa-solid ${isSuccess ? 'fa-circle-check text-emerald-400' : 'fa-circle-exclamation text-white'} text-base"></i>
+          <span>${message}</span>
+        `;
+
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transition = 'opacity 0.3s ease';
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+
+      // ================= 4. TAB NAVIGATION =================
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetTab = btn.dataset.tab;
+
+          tabBtns.forEach(b => {
+            b.classList.remove('bg-amber-400', 'text-slate-900', 'shadow-md');
+            b.classList.add('text-slate-600', 'hover:bg-slate-100');
+          });
+
+          btn.classList.add('bg-amber-400', 'text-slate-900', 'shadow-md');
+          btn.classList.remove('text-slate-600', 'hover:bg-slate-100');
+
+          tabContents.forEach(content => {
+            if (content.id === targetTab) {
+              content.classList.remove('hidden');
+            } else {
+              content.classList.add('hidden');
+            }
+          });
+
+          // Refresh active tab views
+          if (targetTab === 'tab-reorder') renderReorderGrid();
+          if (targetTab === 'tab-list') renderBooksTable();
+        });
+      });
+
+
+      // ================= 5. TAB 1: FORM BUILDER & LIVE PREVIEW =================
+      let formPagesData = [
+        "Judul Cerita Sampul Depan",
+        "Di suatu tempat yang indah, kisah ajaib ini dimulai...",
+        "Pesan Moral: Kebaikan hati membawa kebahagiaan."
+      ];
+
+      function renderFormPages() {
+        const container = document.getElementById('pages-container');
+        container.innerHTML = '';
+
+        formPagesData.forEach((text, idx) => {
+          const pageBox = document.createElement('div');
+          pageBox.className = 'p-4 bg-slate-50 border border-slate-200 rounded-2xl relative space-y-2';
+
+          const isCover = idx === 0;
+          const isBack = idx === formPagesData.length - 1;
+
+          pageBox.innerHTML = `
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-bold ${isCover ? 'text-amber-600' : isBack ? 'text-purple-600' : 'text-slate-600'}">
+                ${isCover ? '📖 Halaman 1 (Sampul Depan)' : isBack ? `🏁 Halaman ${idx + 1} (Sampul Belakang)` : `Halaman ${idx + 1}`}
+              </span>
+              ${formPagesData.length > 2 ? `
+                <button type="button" class="btn-delete-page text-slate-400 hover:text-rose-500 p-1 rounded-lg text-xs" data-idx="${idx}">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              ` : ''}
+            </div>
+
+            <textarea rows="2" class="page-text-input w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-amber-400" data-idx="${idx}" placeholder="Tuliskan teks narasi cerita halaman ini...">${text}</textarea>
+          `;
+
+          container.appendChild(pageBox);
+        });
+
+        // Add Listeners
+        document.querySelectorAll('.page-text-input').forEach(input => {
+          input.addEventListener('input', (e) => {
+            formPagesData[e.target.dataset.idx] = e.target.value;
+            updateLivePreview();
+          });
+        });
+
+        document.querySelectorAll('.btn-delete-page').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const index = parseInt(btn.dataset.idx);
+            formPagesData.splice(index, 1);
+            renderFormPages();
+            updateLivePreview();
+          });
+        });
+
+        document.getElementById('preview-pages-count').textContent = `${formPagesData.length} Halaman`;
+      }
+
+      document.getElementById('btn-add-page').addEventListener('click', () => {
+        formPagesData.push("Cerita berlanjut pada lembaran halaman berikutnya...");
+        renderFormPages();
+        updateLivePreview();
+      });
+
+      // Live Preview Binding
+      function updateLivePreview() {
+        const title = document.getElementById('input-title').value || 'Judul Buku Preview';
+        const author = document.getElementById('input-author').value || 'Oleh Penulis';
+        const category = document.getElementById('input-category').value;
+        const age = document.getElementById('input-age').value;
+        const readtime = document.getElementById('input-readtime').value;
+        const color = document.getElementById('input-cover-color').value;
+        const synopsis = document.getElementById('input-synopsis').value || 'Ringkasan cerita akan tampil secara otomatis di sini saat Anda mengetikkan pada form di samping...';
+
+        document.getElementById('preview-card-title').textContent = title;
+        document.getElementById('preview-card-author').textContent = `Oleh ${author}`;
+        document.getElementById('preview-category-badge').textContent = category;
+        document.getElementById('preview-card-age').textContent = age;
+        document.getElementById('preview-card-time').textContent = readtime;
+        document.getElementById('preview-cover-box').style.backgroundColor = color;
+        document.getElementById('preview-card-synopsis').textContent = synopsis;
+        document.getElementById('preview-pages-count').textContent = `${formPagesData.length} Halaman`;
+      }
+
+      ['input-title', 'input-author', 'input-category', 'input-age', 'input-readtime', 'input-cover-color', 'input-synopsis'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updateLivePreview);
+        document.getElementById(id).addEventListener('change', updateLivePreview);
+      });
+
+      // Form Submission
+      document.getElementById('story-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const editId = document.getElementById('book-edit-id').value;
+        const title = document.getElementById('input-title').value;
+        const author = document.getElementById('input-author').value;
+        const category = document.getElementById('input-category').value;
+        const ageGroup = document.getElementById('input-age').value;
+        const readTime = document.getElementById('input-readtime').value;
+        const coverBg = document.getElementById('input-cover-color').value;
+        const synopsis = document.getElementById('input-synopsis').value;
+
+        if (editId) {
+          // Update Existing
+          const idx = booksData.findIndex(b => b.id === editId);
+          if (idx !== -1) {
+            booksData[idx] = {
+              ...booksData[idx],
+              title, author, category, ageGroup, readTime, coverBg, synopsis,
+              texts: [...formPagesData]
+            };
+            showToast('Buku cerita berhasil diperbarui!');
+          }
+        } else {
+          // Add New Book
+          const newBook = {
+            id: 'book-' + Date.now(),
+            title,
+            author,
+            category,
+            ageGroup,
+            readTime,
+            coverBg,
+            synopsis,
+            visible: true,
+            isFeatured: false,
+            texts: [...formPagesData]
+          };
+          booksData.unshift(newBook);
+          showToast('Buku cerita baru berhasil ditambahkan ke etalase!');
+        }
+
+        saveBooksData();
+        resetStoryForm();
+      });
+
+      function resetStoryForm() {
+        document.getElementById('story-form').reset();
+        document.getElementById('book-edit-id').value = '';
+        document.getElementById('form-mode-title').textContent = 'Buat Buku Cerita Baru';
+        document.getElementById('btn-clear-form').classList.add('hidden');
+        formPagesData = [
+          "Judul Cerita Sampul Depan",
+          "Di suatu tempat yang indah, kisah ajaib ini dimulai...",
+          "Pesan Moral: Kebaikan hati membawa kebahagiaan."
+        ];
+        renderFormPages();
+        updateLivePreview();
+      }
+
+      document.getElementById('btn-clear-form').addEventListener('click', resetStoryForm);
+
+
+      // ================= 6. TAB 2: DRAG & DROP SHELF POSITIONING =================
+      function renderReorderGrid() {
+        const grid = document.getElementById('reorder-grid');
+        grid.innerHTML = '';
+
+        booksData.forEach((book, index) => {
+          const item = document.createElement('div');
+          item.className = 'draggable-item bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-3';
+          item.draggable = true;
+          item.dataset.index = index;
+
+          item.innerHTML = `
+            <div class="flex items-center gap-3">
+              <span class="p-2 text-slate-300 hover:text-slate-500 cursor-grab">
+                <i class="fa-solid fa-grip-vertical text-lg"></i>
+              </span>
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs" style="background-color: ${book.coverBg || '#cbd5e1'}">
+                #${index + 1}
+              </div>
+              <div>
+                <h5 class="text-sm font-bold text-slate-800 font-heading leading-tight">${book.title}</h5>
+                <p class="text-[11px] text-slate-400">${book.category} • ${book.texts.length} Halaman</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button class="btn-toggle-vis p-2 rounded-xl text-xs font-bold transition-all ${
+                book.visible !== false ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-slate-100 text-slate-400'
+              }" data-id="${book.id}" title="Tampilkan / Sembunyikan">
+                <i class="fa-solid ${book.visible !== false ? 'fa-eye' : 'fa-eye-slash'}"></i>
+              </button>
+
+              <button class="btn-toggle-feat p-2 rounded-xl text-xs font-bold transition-all ${
+                book.isFeatured ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-400'
+              }" data-id="${book.id}" title="Buku Utama / Spotlight">
+                <i class="fa-solid fa-star"></i>
+              </button>
+            </div>
+          `;
+
+          grid.appendChild(item);
+        });
+
+        setupDragAndDrop();
+
+        // Button events inside reorder items
+        document.querySelectorAll('.btn-toggle-vis').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const book = booksData.find(b => b.id === btn.dataset.id);
+            if (book) {
+              book.visible = book.visible === false ? true : false;
+              saveBooksData();
+              renderReorderGrid();
+              showToast(`Status visibilitas "${book.title}" diperbarui.`);
+            }
+          });
+        });
+
+        document.querySelectorAll('.btn-toggle-feat').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const book = booksData.find(b => b.id === btn.dataset.id);
+            if (book) {
+              booksData.forEach(b => b.isFeatured = false); // Single featured spotlight
+              book.isFeatured = true;
+              
+              // Also update widget headline
+              widgetsData.heroTitle = book.title;
+              widgetsData.heroDesc = book.synopsis;
+              saveWidgetsData();
+
+              saveBooksData();
+              renderReorderGrid();
+              showToast(`"${book.title}" dijadikan Buku Utama!`);
+            }
+          });
+        });
+      }
+
+      function setupDragAndDrop() {
+        let draggedIndex = null;
+        const items = document.querySelectorAll('.draggable-item');
+
+        items.forEach(item => {
+          item.addEventListener('dragstart', (e) => {
+            draggedIndex = parseInt(item.dataset.index);
+            item.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+          });
+
+          item.addEventListener('dragend', () => {
+            item.classList.remove('dragging');
+            items.forEach(i => i.classList.remove('drag-over'));
+          });
+
+          item.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            item.classList.add('drag-over');
+          });
+
+          item.addEventListener('dragleave', () => {
+            item.classList.remove('drag-over');
+          });
+
+          item.addEventListener('drop', (e) => {
+            e.preventDefault();
+            item.classList.remove('drag-over');
+            const dropIndex = parseInt(item.dataset.index);
+
+            if (draggedIndex !== null && draggedIndex !== dropIndex) {
+              const movedBook = booksData.splice(draggedIndex, 1)[0];
+              booksData.splice(dropIndex, 0, movedBook);
+              saveBooksData();
+              renderReorderGrid();
+              showToast('Posisi buku berhasil dirubah!');
+            }
+          });
+        });
+      }
+
+      document.getElementById('btn-save-positions').addEventListener('click', () => {
+        saveBooksData();
+        showToast('Urutan posisi etalase tersimpan secara permanen!');
+      });
+
+
+      // ================= 7. TAB 3: WIDGET MANAGEMENT =================
+      function loadWidgetFormValues() {
+        document.getElementById('widget-hero-active').checked = widgetsData.heroActive !== false;
+        document.getElementById('widget-hero-tag').value = widgetsData.heroTag || '🌟 Buku Utama Hari Ini';
+        document.getElementById('widget-hero-title').value = widgetsData.heroTitle || 'Si Miko yang Bernasib Baik';
+        document.getElementById('widget-hero-desc').value = widgetsData.heroDesc || '';
+        document.getElementById('widget-sound-default').checked = widgetsData.soundDefault !== false;
+        document.getElementById('widget-tts-default').checked = widgetsData.ttsDefault !== false;
+        document.getElementById('widget-favs-visible').checked = widgetsData.favsVisible !== false;
+      }
+
+      document.getElementById('btn-save-widgets').addEventListener('click', () => {
+        widgetsData = {
+          heroActive: document.getElementById('widget-hero-active').checked,
+          heroTag: document.getElementById('widget-hero-tag').value,
+          heroTitle: document.getElementById('widget-hero-title').value,
+          heroDesc: document.getElementById('widget-hero-desc').value,
+          soundDefault: document.getElementById('widget-sound-default').checked,
+          ttsDefault: document.getElementById('widget-tts-default').checked,
+          favsVisible: document.getElementById('widget-favs-visible').checked
+        };
+
+        saveWidgetsData();
+        showToast('Pengaturan widget dan banner berhasil disimpan!');
+      });
+
+
+      // ================= 8. TAB 4: BOOKS COLLECTION TABLE LIST =================
+      function renderBooksTable() {
+        const tbody = document.getElementById('table-books-body');
+        tbody.innerHTML = '';
+
+        booksData.forEach((book) => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-50/80 transition-colors';
+
+          tr.innerHTML = `
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0" style="background-color: ${book.coverBg || '#e2e8f0'}">
+                  📖
+                </div>
+                <div>
+                  <p class="font-bold text-slate-800 text-sm font-heading">${book.title}</p>
+                  <p class="text-[11px] text-slate-400">Oleh ${book.author}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-4">
+              <span class="bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-lg text-[10px]">
+                ${book.category}
+              </span>
+            </td>
+            <td class="px-4 py-4 font-semibold">${book.ageGroup}</td>
+            <td class="px-4 py-4 font-semibold">${book.texts.length} Halaman</td>
+            <td class="px-4 py-4">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full ${book.visible !== false ? 'bg-emerald-500' : 'bg-slate-300'}"></span>
+                <span class="font-bold ${book.visible !== false ? 'text-emerald-600' : 'text-slate-400'}">
+                  ${book.visible !== false ? 'Tampil' : 'Sembunyi'}
+                </span>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-right space-x-1">
+              <button class="btn-edit-book p-2 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all" data-id="${book.id}" title="Edit Buku">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+              <button class="btn-dup-book p-2 text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-xl transition-all" data-id="${book.id}" title="Duplikat Cerita">
+                <i class="fa-solid fa-copy"></i>
+              </button>
+              <button class="btn-del-book p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all" data-id="${book.id}" title="Hapus Cerita">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </td>
+          `;
+
+          tbody.appendChild(tr);
+        });
+
+        // Table Event Listeners
+        document.querySelectorAll('.btn-edit-book').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const book = booksData.find(b => b.id === btn.dataset.id);
+            if (book) populateFormForEdit(book);
+          });
+        });
+
+        document.querySelectorAll('.btn-dup-book').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const book = booksData.find(b => b.id === btn.dataset.id);
+            if (book) {
+              const dupBook = {
+                ...book,
+                id: 'book-' + Date.now(),
+                title: `${book.title} (Salinan)`
+              };
+              booksData.push(dupBook);
+              saveBooksData();
+              renderBooksTable();
+              showToast(`Berhasil menduplikat "${book.title}"!`);
+            }
+          });
+        });
+
+        document.querySelectorAll('.btn-del-book').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const book = booksData.find(b => b.id === btn.dataset.id);
+            if (book && confirm(`Apakah Anda yakin ingin menghapus buku "${book.title}"?`)) {
+              booksData = booksData.filter(b => b.id !== book.id);
+              saveBooksData();
+              renderBooksTable();
+              showToast(`Buku "${book.title}" telah dihapus.`);
+            }
+          });
+        });
+      }
+
+      function populateFormForEdit(book) {
+        document.getElementById('book-edit-id').value = book.id;
+        document.getElementById('input-title').value = book.title;
+        document.getElementById('input-author').value = book.author;
+        document.getElementById('input-category').value = book.category;
+        document.getElementById('input-age').value = book.ageGroup;
+        document.getElementById('input-readtime').value = book.readTime;
+        document.getElementById('input-cover-color').value = book.coverBg || '#fef3c7';
+        document.getElementById('input-synopsis').value = book.synopsis;
+
+        formPagesData = [...book.texts];
+
+        document.getElementById('form-mode-title').textContent = `Edit Buku: "${book.title}"`;
+        document.getElementById('btn-clear-form').classList.remove('hidden');
+
+        renderFormPages();
+        updateLivePreview();
+
+        // Switch to Tab 1
+        document.querySelector('[data-tab="tab-form"]').click();
+      }
+
+      document.getElementById('btn-add-new-from-list').addEventListener('click', () => {
+        resetStoryForm();
+        document.querySelector('[data-tab="tab-form"]').click();
+      });
+
+
+      // ================= 9. RESET TO DEFAULT DATA =================
+      document.getElementById('btn-reset-data').addEventListener('click', () => {
+        if (confirm('Kembalikan semua data buku dan widget ke kondisi awal default?')) {
+          localStorage.removeItem('nusantara_books_data');
+          localStorage.removeItem('nusantara_widgets_data');
+          booksData = [...DEFAULT_BOOKS];
+          widgetsData = { ...DEFAULT_WIDGETS };
+          saveBooksData();
+          saveWidgetsData();
+          loadWidgetFormValues();
+          renderReorderGrid();
+          renderBooksTable();
+          resetStoryForm();
+          showToast('Data berhasil di-reset ke kondisi awal.');
+        }
+      });
+
+
+      // ================= 10. INITIALIZATION =================
+      updateBadgesAndCounters();
+      renderFormPages();
+      updateLivePreview();
+      loadWidgetFormValues();
+
+    });
+  </script>
+</body>
+</html>
