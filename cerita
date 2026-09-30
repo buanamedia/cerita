@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dunia Cerita Anak - Etalase Buku Digital Interaktif</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Page Flip Library for Flipbook Reader -->
+  <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: linear-gradient(135deg, #e0f2fe 0%, #fae8ff 50%, #fef3c7 100%);
+      min-height: 100vh;
+      color: #1e293b;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Fredoka', cursive;
+    }
+
+    /* Floating Clouds Animation */
+    .floating-cloud {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 50px;
+      animation: floatCloud 25s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes floatCloud {
+      0% { transform: translateX(-200px); }
+      100% { transform: translateX(100vw); }
+    }
+
+    /* Virtual Wooden Shelf Style */
+    .wooden-shelf {
+      background: linear-gradient(180deg, #b45309 0%, #78350f 80%, #451a03 100%);
+      border-radius: 12px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+      position: relative;
+      height: 24px;
+      margin-top: -8px;
+    }
+
+    .wooden-shelf::before {
+      content: '';
+      position: absolute;
+      top: -6px;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: #d97706;
+      border-radius: 6px 6px 0 0;
+      box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.5);
+    }
+
+    /* Flipbook Container */
+    .flipbook-viewport {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    .page {
+      background-color: #fffbf0;
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      user-select: none;
+    }
+
+    .page-hard {
+      background-color: #38bdf8;
+      color: white;
+      border: 3px solid #0284c7;
+    }
+
+    .page-content {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 1.25rem;
+    }
+
+    .paper-shadow-left {
+      box-shadow: inset 15px 0 20px -10px rgba(0, 0, 0, 0.15);
+    }
+    .paper-shadow-right {
+      box-shadow: inset -15px 0 20px -10px rgba(0, 0, 0, 0.15);
+    }
+
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 8px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 8px;
+    }
+
+    /* Card Glow Hover */
+    .book-card {
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .book-card:hover {
+      transform: translateY(-8px) scale(1.02);
+    }
+
+    /* Modal Fade In */
+    .modal-active {
+      display: flex !important;
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body class="relative min-h-screen flex flex-col justify-between">
+
+  <!-- Ambient Floating Clouds -->
+  <div class="floating-cloud w-40 h-12 top-10 left-0" style="animation-delay: 0s;"></div>
+  <div class="floating-cloud w-60 h-16 top-32 left-0" style="animation-delay: -8s;"></div>
+  <div class="floating-cloud w-48 h-14 top-72 left-0" style="animation-delay: -16s;"></div>
+
+  <!-- Navigation / Header -->
+  <header class="w-full max-w-6xl mx-auto px-4 py-4 z-10">
+    <div class="bg-white/80 backdrop-blur-md rounded-3xl p-4 shadow-xl border border-white/60 flex flex-wrap justify-between items-center gap-4">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center space-x-3">
+        <div class="bg-gradient-to-tr from-amber-400 to-orange-400 text-white p-3 rounded-2xl shadow-md flex items-center justify-center transform -rotate-3 hover:rotate-0 transition-transform">
+          <i class="fa-solid fa-book-open-reader text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-wide font-heading">
+            Dunia Cerita <span class="text-orange-500">Anak</span>
+          </h1>
+          <p class="text-xs text-slate-500 font-semibold">Perpustakaan Flipbook Interaktif Bergambar</p>
+        </div>
+      </div>
+
+      <!-- Quick Favorites Tab & Audio Toggle -->
+      <div class="flex items-center gap-3">
+        <button id="btn-show-favorites" class="flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-xs md:text-sm bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 active:scale-95 transition-all shadow-sm">
+          <i class="fa-solid fa-heart text-rose-500"></i>
+          <span>Favorit Saya</span>
+          <span id="fav-count-badge" class="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+        </button>
+
+        <button id="btn-sound-effects" class="p-2.5 bg-amber-100 text-amber-700 hover:bg-amber-200 rounded-2xl transition-all shadow-sm" title="Sound Effects ON/OFF">
+          <i id="sound-icon" class="fa-solid fa-volume-high text-base"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Catalog Content -->
+  <main class="w-full max-w-6xl mx-auto px-4 py-4 flex-1 z-10">
+    
+    <!-- Hero / Featured Banner -->
+    <div class="bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 rounded-3xl p-6 md:p-8 text-white shadow-xl mb-8 relative overflow-hidden">
+      <div class="relative z-10 max-w-xl">
+        <span class="bg-amber-300 text-amber-950 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3 inline-block shadow-sm">
+          🌟 Buku Utama Hari Ini
+        </span>
+        <h2 class="text-3xl md:text-4xl font-extrabold font-heading mb-2 leading-tight">
+          Si Miko yang Bernasib Baik
+        </h2>
+        <p class="text-sky-100 text-sm md:text-base mb-5 leading-relaxed">
+          Ikuti kisah haru Miko, kucing mungil di pinggir jalan yang kelaparan, dan bagaimana pertolongan ramah seorang anak merubah hidupnya! Fitur bacaan bersuara & animasi membalik halaman interaktif.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <button id="btn-read-featured" class="px-6 py-3 bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-900 font-bold rounded-2xl shadow-lg transition-all flex items-center gap-2 text-sm md:text-base">
+            <i class="fa-solid fa-book-open"></i>
+            <span>Baca Sekarang</span>
+          </button>
+          <button id="btn-detail-featured" class="px-5 py-3 bg-white/20 hover:bg-white/30 active:scale-95 text-white font-bold rounded-2xl transition-all backdrop-blur-md text-sm">
+            <span>Detail Cerita</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Decorative Mascot Icon -->
+      <div class="absolute -right-6 -bottom-6 opacity-30 md:opacity-80 pointer-events-none transform rotate-12">
+        <i class="fa-solid fa-cat text-[180px] md:text-[220px] text-white"></i>
+      </div>
+    </div>
+
+    <!-- Filter & Search Controls -->
+    <section class="bg-white/70 backdrop-blur-md p-4 md:p-5 rounded-3xl shadow-lg border border-white/80 mb-8 space-y-4">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+        
+        <!-- Search Bar -->
+        <div class="relative w-full md:w-80">
+          <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input type="text" id="input-search" placeholder="Cari judul buku atau kata kunci..." 
+                 class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all">
+        </div>
+
+        <!-- Filter Category Pills -->
+        <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 custom-scroll" id="category-pills">
+          <!-- Dynamically Generated -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Books Showcase Shelf Section -->
+    <section>
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h3 class="text-2xl font-bold font-heading text-slate-800" id="section-title">
+            Koleksi Buku Cerita
+          </h3>
+          <p class="text-xs text-slate-500 font-medium" id="section-subtitle">Pilih buku favoritmu untuk mulai membaca secara interaktif</p>
+        </div>
+        <span id="results-count" class="text-xs font-bold text-amber-600 bg-amber-100 px-3 py-1 rounded-xl">
+          6 Buku Tersedia
+        </span>
+      </div>
+
+      <!-- Shelf Grid Container -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12" id="books-grid">
+        <!-- Dynamically rendered via JavaScript -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full bg-white/80 backdrop-blur-md border-t border-slate-200/80 py-6 text-center text-xs text-slate-500 font-medium z-10 mt-12">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-3">
+      <p>✨ Nusantara Kids Storybook Showcase &copy; 2026. Dioptimalkan untuk anak-anak & pendidikan.</p>
+      <div class="flex gap-4">
+        <span class="hover:text-amber-600 cursor-pointer transition-colors"><i class="fa-solid fa-heart text-rose-400"></i> Ramah Anak</span>
+        <span class="hover:text-amber-600 cursor-pointer transition-colors"><i class="fa-solid fa-volume-high text-sky-400"></i> Suara Narasi</span>
+        <span class="hover:text-amber-600 cursor-pointer transition-colors"><i class="fa-solid fa-mobile-screen text-emerald-400"></i> Responsif</span>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- ================= MODAL 1: BOOK DETAIL / SYNOPSIS ================= -->
+  <div id="modal-detail" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden justify-center items-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 relative modal-card transform transition-all">
+      <button id="btn-close-detail" class="absolute top-4 right-4 w-9 h-9 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full flex items-center justify-center transition-colors">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="flex flex-col sm:flex-row gap-5 items-center sm:items-start">
+        <canvas id="canvas-detail-cover" width="160" height="220" class="rounded-2xl border-2 border-slate-200 shadow-md flex-shrink-0 bg-slate-50"></canvas>
+        
+        <div class="flex-1 text-center sm:text-left">
+          <span id="detail-category" class="bg-amber-100 text-amber-700 text-[11px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-wide inline-block mb-2">
+            Hewan
+          </span>
+          <h3 id="detail-title" class="text-2xl font-bold font-heading text-slate-800 leading-tight mb-1">
+            Judul Buku
+          </h3>
+          <p id="detail-author" class="text-xs text-slate-400 font-medium mb-3">Oleh Penulis</p>
+
+          <div class="flex flex-wrap justify-center sm:justify-start gap-2 text-xs font-semibold text-slate-600 mb-4">
+            <span class="bg-slate-100 px-2.5 py-1 rounded-md"><i class="fa-solid fa-child text-sky-500 mr-1"></i> <span id="detail-age">3-6 Tahun</span></span>
+            <span class="bg-slate-100 px-2.5 py-1 rounded-md"><i class="fa-solid fa-clock text-emerald-500 mr-1"></i> <span id="detail-time">5 Menit</span></span>
+          </div>
+
+          <p id="detail-synopsis" class="text-sm text-slate-600 leading-relaxed mb-6 custom-scroll max-h-32 overflow-y-auto">
+            Sinopsis buku akan ditampilkan di sini.
+          </p>
+
+          <div class="flex gap-3">
+            <button id="btn-read-modal" class="flex-1 py-3 bg-amber-400 hover:bg-amber-500 active:scale-95 text-slate-900 font-bold rounded-2xl shadow-md transition-all text-sm flex items-center justify-center gap-2">
+              <i class="fa-solid fa-book-open"></i>
+              <span>Mulai Membaca</span>
+            </button>
+            <button id="btn-fav-modal" class="p-3 bg-rose-50 border border-rose-200 text-rose-500 hover:bg-rose-100 rounded-2xl transition-all">
+              <i class="fa-solid fa-heart text-lg"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ================= MODAL 2: INTERACTIVE FLIPBOOK READER ================= -->
+  <div id="modal-reader" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex-col justify-between p-2 md:p-4">
+    
+    <!-- Reader Top Bar -->
+    <div class="w-full max-w-5xl mx-auto flex justify-between items-center bg-white/10 backdrop-blur-md p-3 rounded-2xl text-white border border-white/10 mb-2">
+      <div class="flex items-center gap-3">
+        <button id="btn-close-reader" class="p-2 bg-white/20 hover:bg-white/30 text-white rounded-xl transition-all">
+          <i class="fa-solid fa-arrow-left text-base"></i>
+        </button>
+        <div>
+          <h4 id="reader-book-title" class="text-sm md:text-base font-bold font-heading leading-tight">Si Miko yang Bernasib Baik</h4>
+          <p class="text-[10px] md:text-xs text-sky-200">Buku Flipbook Digital Interaktif</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Narration Toggle -->
+        <button id="btn-narration-reader" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-500 text-white hover:bg-sky-600 transition-all">
+          <i class="fa-solid fa-volume-high"></i>
+          <span class="hidden sm:inline">Narasi: ON</span>
+        </button>
+
+        <!-- Read Page Button -->
+        <button id="btn-read-page-reader" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-400 text-slate-900 hover:bg-amber-300 transition-all">
+          <i class="fa-solid fa-play"></i>
+          <span class="hidden sm:inline">Baca Halaman</span>
+        </button>
+
+        <!-- Fullscreen Button -->
+        <button id="btn-fullscreen-reader" class="p-2 bg-white/20 hover:bg-white/30 text-white rounded-xl transition-all">
+          <i class="fa-solid fa-expand"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Reader Viewport Container -->
+    <div class="flex-1 flex justify-center items-center my-auto relative">
+      <div class="flipbook-viewport w-full max-w-4xl">
+        <div id="flipbook-container" class="mx-auto shadow-2xl rounded-lg">
+          <!-- Pages injected dynamically by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Reader Bottom Controls -->
+    <div class="w-full max-w-xl mx-auto bg-white/90 backdrop-blur-md rounded-2xl p-2.5 shadow-xl border border-white/50 flex items-center justify-between gap-2 mt-2">
+      <button id="btn-prev-reader" class="flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-all disabled:opacity-40">
+        <i class="fa-solid fa-chevron-left text-[10px]"></i>
+        <span>Sebelumnya</span>
+      </button>
+
+      <div class="flex flex-col items-center">
+        <span id="reader-page-num" class="text-xs font-extrabold text-slate-800">Sampul</span>
+        <div class="flex gap-1 mt-0.5" id="reader-page-dots"></div>
+      </div>
+
+      <button id="btn-next-reader" class="flex items-center gap-1 px-3 py-1.5 bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold rounded-xl text-xs transition-all disabled:opacity-40">
+        <span>Selanjutnya</span>
+        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+      </button>
+    </div>
+
+  </div>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+      // ================= 1. BOOK DATABASE =================
+      const BOOKS_DATA = [
+        {
+          id: 'miko-cat',
+          title: 'Si Miko yang Bernasib Baik',
+          author: 'Kak Bambang',
+          category: 'Hewan',
+          ageGroup: '3-6 Tahun',
+          readTime: '5 Menit',
+          coverBg: '#fef3c7',
+          synopsis: 'Kisah haru dan manis tentang Miko, seekor anak kucing mungil yang kelaparan di pinggir jalan hingga ditemukan oleh Leo yang merawatnya penuh kasih sayang sampai kembali sehat dan ceria.',
+          isFeatured: true,
+          interactive: true, // Fully working multi-page flipbook
+          texts: [
+            "Si Miko yang Bernasib Baik. Buku cerita interaktif kisah kasih sayang dan persahabatan.",
+            "Di suatu sore yang dingin, ada seekor anak kucing mungil bernama Miko. Miko duduk sendirian di pinggir jalan dekat kotak kardus tua. Badannya kurus, kotor, dan perutnya berbunyi kencang karena sangat lapar.",
+            "Tak lama kemudian, seorang anak laki-laki bernama Leo melintas sepulang sekolah. Leo mendengar suara meong yang sangat pelan. Leo berlutut dengan senyum lembut dan membelai kepala Miko perlahan. Kasihan sekali kamu kecil, mau ikut aku pulang?",
+            "Leo membawa Miko ke rumahnya. Dengan penuh kehati-hatian, Leo memandikan Miko menggunakan air hangat dan mengeringkannya dengan handuk lembut. Setelah itu, Leo memberi Miko secangkir susu hangat dan makanan lezat.",
+            "Beberapa hari berlalu. Miko kini tidak lagi lemas. Bulunya menjadi sangat tebal, bersih, dan halus! Setiap hari Miko mengejar bola benang dan melompat gembira. Miko dan Leo kini menjadi sahabat sejati.",
+            "Pesan Moral: Kasih sayang dan kebaikan kecil kita dapat mengubah hidup makhluk lain menjadi penuh kebahagiaan. Sayangilah hewan di sekitar kita!"
+          ]
+        },
+        {
+          id: 'kelinci-kiki',
+          title: 'Petualangan Kiki si Kelinci',
+          author: 'Bunda Aulia',
+          category: 'Petualangan',
+          ageGroup: '3-6 Tahun',
+          readTime: '4 Menit',
+          coverBg: '#dcfce7',
+          synopsis: 'Kiki kelinci suka sekali melompat jauh di ladang wortel. Suatu hari Kiki menemukan peta rahasia menuju taman bunga ajaib yang tersembunyi!',
+          interactive: false,
+          texts: [
+            "Petualangan Kiki si Kelinci. Kisah penjelajahan seru di taman ajaib.",
+            "Kiki adalah kelinci yang sangat lincah. Hobinya melompat tinggi dan mencari wortel segar di ladang pak Tani.",
+            "Suatu pagi, Kiki menemukan selembar peta kecil di bawah pohon oak tua. Peta itu menunjukkan jalan menuju Taman Bunga Pelangi!",
+            "Dengan penuh semangat, Kiki mengajak teman-temannya berpetualang mengikuti petunjuk di peta tersebut. Akhirnya mereka menemukan taman bunga paling indah!",
+            "Pesan Moral: Keberanian dan rasa ingin tahu yang positif akan membawa kita pada petualangan yang menyenangkan bersama teman."
+          ]
+        },
+        {
+          id: 'niko-bintang',
+          title: 'Niko dan Bintang Jatuh',
+          author: 'Paman Tariq',
+          category: 'Edukasi',
+          ageGroup: '6-9 Tahun',
+          readTime: '6 Menit',
+          coverBg: '#e0e7ff',
+          synopsis: 'Niko penasaran mengapa bintang berkedip di malam hari. Bersama teropong kecilnya, Niko menjelajahi keajaiban langit malam yang penuh rahasia.',
+          interactive: false,
+          texts: [
+            "Niko dan Bintang Jatuh. Mengamati keajaiban malam.",
+            "Niko sangat suka melihat langit malam dari jendela kamarnya. Bintang-bintang tampak seperti berlian kecil yang bersinar.",
+            "Suatu malam, sebuah bintang jatuh melintas cepat! Niko membuat permintaan indah untuk kebahagiaan keluarga dan teman-temannya.",
+            "Ayah lalu menjelaskan keandalan ilmu sains tentang benda langit dengan cara yang sangat seru dan mudah dipahami.",
+            "Pesan Moral: Belajar tentang alam semesta membuat kita semakin bersyukur atas indahnya dunia tempat kita tinggal."
+          ]
+        },
+        {
+          id: 'gajah-pemberani',
+          title: 'Gajah Kecil yang Pemberani',
+          author: 'Ibu Ratna',
+          category: 'Persahabatan',
+          ageGroup: '3-6 Tahun',
+          readTime: '5 Menit',
+          coverBg: '#ffe4e6',
+          synopsis: 'Gani si gajah kecil merasa tidak percaya diri karena telinganya yang sangat lebar. Namun telinga lebarnyalah yang menyelamatkan teman-temannya saat hujan deras.',
+          interactive: false,
+          texts: [
+            "Gajah Kecil yang Pemberani. Cerita percaya diri dan persahabatan.",
+            "Gani si gajah kecil sering merasa malu karena memiliki telinga yang sangat besar dan lebar dibanding teman-temannya.",
+            "Saat badai tiba di hutan, anak-anak burung kehilangan sarangnya. Gani dengan sigap menggunakan telinga lebarnya sebagai payung perlindungan!",
+            "Semua hewan berterima kasih pada Gani. Gani sadar bahwa setiap kekurangan bisa menjadi kelebihan yang luar biasa.",
+            "Pesan Moral: Hargai dirimu sendiri, karena setiap kita diciptakan istimewa dengan keunikan masing-masing."
+          ]
+        },
+        {
+          id: 'hutan-pelangi',
+          title: 'Misteri Hutan Pelangi',
+          author: 'Kak Dimas',
+          category: 'Petualangan',
+          ageGroup: '6-9 Tahun',
+          readTime: '7 Menit',
+          coverBg: '#fef08a',
+          synopsis: 'Mengapa pohon di Hutan Pelangi berubah warna setiap musim ganti? Ayo ikuti petualangan para sahabat kecil memecahkan teka-teki alam!',
+          interactive: false,
+          texts: [
+            "Misteri Hutan Pelangi. Petualangan seru memecahkan teka-teki alam.",
+            "Di tepi desa ada Hutan Pelangi. Daun-daun pohon di sana bisa memancarkan warna merah, kuning, dan hijau yang berkilauan.",
+            "Boni si monyet cerdik dan Dika si burung hantu bekerja sama mencari tahu rahasia warna-warni pohon tersebut.",
+            "Ternyata, warna indah itu berasal dari embun ajaib yang memantulkan sinar matahari pagi dengan sangat cantik!",
+            "Pesan Moral: Kerja sama tim yang kompak dapat menyelesaikan teka-teki yang sulit sekalipun."
+          ]
+        },
+        {
+          id: 'lebah-rajin',
+          title: 'Lili si Lebah yang Rajin',
+          author: 'Bunda Aulia',
+          category: 'Edukasi',
+          ageGroup: '3-6 Tahun',
+          readTime: '4 Menit',
+          coverBg: '#fed7aa',
+          synopsis: 'Lili lebah cilik tidak pernah menyerah mengumpulkan nektar bunga segar untuk membuat madu manis yang berguna bagi seluruh penghuni sarang.',
+          interactive: false,
+          texts: [
+            "Lili si Lebah yang Rajin. Belajar ketekunan dan kerja keras.",
+            "Setiap pagi saat matahari terbit, Lili lebah cilik sudah terbang menghampiri bunga-bunga mawar dan melati di taman.",
+            "Meski terkadang lelah, Lili selalu tersenyum karena tahu madu yang ia buat akan membantu menyembuhkan teman-temannya yang sakit.",
+            "Ratu lebah memberi Lili penghargaan sebagai lebah paling rajin dan teliti di seluruh sarang!",
+            "Pesan Moral: Kerja keras dan ketekunan selalu membuahkan hasil yang manis dan bermanfaat bagi orang banyak."
+          ]
+        }
+      ];
+
+      const CATEGORIES = ['Semua', 'Hewan', 'Persahabatan', 'Petualangan', 'Edukasi'];
+
+
+      // ================= 2. AUDIO SYNTHESIZER (Web Audio API) =================
+      let audioCtx = null;
+      let soundEnabled = true;
+
+      function playUiClickSound() {
+        if (!soundEnabled) return;
+        try {
+          if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(520, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.08);
+
+          gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.08);
+        } catch (e) {
+          console.warn(e);
+        }
+      }
+
+      function playPageFlipSound() {
+        if (!soundEnabled) return;
+        try {
+          if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+
+          const bufferSize = audioCtx.sampleRate * 0.12;
+          const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+          }
+
+          const noise = audioCtx.createBufferSource();
+          noise.buffer = buffer;
+
+          const filter = audioCtx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.value = 1200;
+          filter.Q.value = 1.5;
+
+          const gain = audioCtx.createGain();
+          gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(audioCtx.destination);
+
+          noise.start();
+        } catch (e) {
+          console.warn(e);
+        }
+      }
+
+
+      // ================= 3. LOCAL STORAGE FAVORITES =================
+      let favorites = JSON.parse(localStorage.getItem('kids_book_favs')) || ['miko-cat'];
+
+      function saveFavorites() {
+        localStorage.setItem('kids_book_favs', JSON.stringify(favorites));
+        updateFavCountBadge();
+      }
+
+      function toggleFavorite(bookId) {
+        playUiClickSound();
+        if (favorites.includes(bookId)) {
+          favorites = favorites.filter(id => id !== bookId);
+        } else {
+          favorites.push(bookId);
+        }
+        saveFavorites();
+        renderBooksGrid();
+      }
+
+      function updateFavCountBadge() {
+        document.getElementById('fav-count-badge').textContent = favorites.length;
+      }
+
+
+      // ================= 4. CANVAS COVER GENERATOR =================
+      function drawBookCover(canvas, book) {
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Background
+        ctx.fillStyle = book.coverBg || '#bae6fd';
+        ctx.fillRect(0, 0, w, h);
+
+        // Decorative Border
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.lineWidth = 6;
+        ctx.strokeRect(8, 8, w - 16, h - 16);
+
+        // Book Title & Mascot Drawing based on Book ID
+        if (book.id === 'miko-cat') {
+          // Orange Cat
+          ctx.fillStyle = '#4ade80';
+          ctx.beginPath();
+          ctx.ellipse(w/2, h + 20, w/1.2, 80, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Sun
+          ctx.fillStyle = '#fde047';
+          ctx.beginPath();
+          ctx.arc(w - 30, 30, 20, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Cat Face
+          drawSimpleCat(ctx, w/2, h/2 + 10, '#f97316');
+        } else if (book.id === 'kelinci-kiki') {
+          // Rabbit
+          ctx.fillStyle = '#86efac';
+          ctx.fillRect(0, h/2 + 20, w, h/2);
+
+          // Rabbit Face
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(w/2, h/2 + 10, 28, 0, Math.PI * 2);
+          ctx.fill();
+          // Ears
+          ctx.beginPath();
+          ctx.ellipse(w/2 - 12, h/2 - 25, 8, 22, -0.1, 0, Math.PI * 2);
+          ctx.ellipse(w/2 + 12, h/2 - 25, 8, 22, 0.1, 0, Math.PI * 2);
+          ctx.fill();
+          // Eyes
+          ctx.fillStyle = '#1e293b';
+          ctx.beginPath();
+          ctx.arc(w/2 - 8, h/2 + 5, 3, 0, Math.PI * 2);
+          ctx.arc(w/2 + 8, h/2 + 5, 3, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (book.id === 'niko-bintang') {
+          // Night Sky & Stars
+          ctx.fillStyle = '#1e1b4b';
+          ctx.fillRect(0, 0, w, h);
+
+          // Stars
+          ctx.fillStyle = '#fde047';
+          for (let i = 0; i < 12; i++) {
+            const sx = (i * 37) % w;
+            const sy = (i * 23) % (h - 40);
+            ctx.beginPath();
+            ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          // Moon
+          ctx.fillStyle = '#fef08a';
+          ctx.beginPath();
+          ctx.arc(w/2, h/2, 30, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // Generic Friendly Icon Shape
+          ctx.fillStyle = '#cbd5e1';
+          ctx.beginPath();
+          ctx.arc(w/2, h/2 + 10, 32, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#64748b';
+          ctx.font = 'bold 24px Fredoka';
+          ctx.textAlign = 'center';
+          ctx.fillText('📖', w/2, h/2 + 18);
+        }
+
+        // Title Overlay Banner
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+        ctx.fillRect(12, 16, w - 24, 46);
+        ctx.shadowColor = 'rgba(0,0,0,0.1)';
+        ctx.shadowBlur = 4;
+
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 12px Quicksand';
+        ctx.textAlign = 'center';
+        ctx.fillText(book.title.substring(0, 22), w/2, 36);
+        ctx.font = '9px Quicksand';
+        ctx.fillStyle = '#64748b';
+        ctx.fillText(book.category, w/2, 50);
+      }
+
+      function drawSimpleCat(ctx, x, y, color) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.fillStyle = color;
+
+        // Head
+        ctx.beginPath();
+        ctx.arc(0, 0, 24, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Ears
+        ctx.beginPath();
+        ctx.moveTo(-18, -12);
+        ctx.lineTo(-8, -32);
+        ctx.lineTo(-2, -18);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(18, -12);
+        ctx.lineTo(8, -32);
+        ctx.lineTo(2, -18);
+        ctx.fill();
+
+        // Eyes
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(-8, -4, 3, 0, Math.PI * 2);
+        ctx.arc(8, -4, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Nose
+        ctx.fillStyle = '#f43f5e';
+        ctx.beginPath();
+        ctx.arc(0, 2, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+
+      // ================= 5. RENDER CATEGORY FILTER PILLS =================
+      let activeCategory = 'Semua';
+      let searchQuery = '';
+      let showingFavoritesOnly = false;
+
+      function renderCategories() {
+        const container = document.getElementById('category-pills');
+        container.innerHTML = '';
+
+        CATEGORIES.forEach(cat => {
+          const btn = document.createElement('button');
+          const isActive = activeCategory === cat && !showingFavoritesOnly;
+          btn.className = `px-4 py-2 rounded-2xl text-xs font-bold transition-all flex-shrink-0 flex items-center gap-1.5 ${
+            isActive 
+              ? 'bg-amber-400 text-slate-900 shadow-md scale-105' 
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          }`;
+          btn.innerHTML = `<span>${cat}</span>`;
+          btn.addEventListener('click', () => {
+            playUiClickSound();
+            activeCategory = cat;
+            showingFavoritesOnly = false;
+            renderCategories();
+            renderBooksGrid();
+          });
+          container.appendChild(btn);
+        });
+      }
+
+
+      // ================= 6. RENDER BOOKS GRID =================
+      function renderBooksGrid() {
+        const grid = document.getElementById('books-grid');
+        grid.innerHTML = '';
+
+        let filtered = BOOKS_DATA.filter(book => {
+          const matchesCat = activeCategory === 'Semua' || book.category === activeCategory;
+          const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                book.synopsis.toLowerCase().includes(searchQuery.toLowerCase());
+          const matchesFav = showingFavoritesOnly ? favorites.includes(book.id) : true;
+          return matchesCat && matchesSearch && matchesFav;
+        });
+
+        // Update titles
+        const sectionTitle = document.getElementById('section-title');
+        const sectionSubtitle = document.getElementById('section-subtitle');
+        const resultsCount = document.getElementById('results-count');
+
+        if (showingFavoritesOnly) {
+          sectionTitle.textContent = "Buku Favorit Saya";
+          sectionSubtitle.textContent = "Koleksi cerita yang paling kamu sukai";
+        } else {
+          sectionTitle.textContent = `Koleksi Cerita (${activeCategory})`;
+          sectionSubtitle.textContent = "Pilih buku favoritmu untuk mulai membaca secara interaktif";
+        }
+        resultsCount.textContent = `${filtered.length} Buku Tersedia`;
+
+        if (filtered.length === 0) {
+          grid.innerHTML = `
+            <div class="col-span-full py-12 text-center bg-white/50 rounded-3xl border border-dashed border-slate-300">
+              <i class="fa-solid fa-book-open text-4xl text-slate-300 mb-3"></i>
+              <h4 class="text-lg font-bold text-slate-700 font-heading">Tidak Ada Buku Ditemukan</h4>
+              <p class="text-xs text-slate-400">Coba ubah kata kunci pencarian atau pilih kategori lain.</p>
+            </div>
+          `;
+          return;
+        }
+
+        filtered.forEach((book, idx) => {
+          const isFav = favorites.includes(book.id);
+          const card = document.createElement('div');
+          card.className = 'book-card bg-white rounded-3xl p-4 shadow-lg border border-slate-100/80 flex flex-col justify-between relative group';
+          
+          card.innerHTML = `
+            <div>
+              <!-- Cover Image Canvas Container -->
+              <div class="relative w-full h-48 bg-slate-50 rounded-2xl overflow-hidden mb-4 flex justify-center items-center border border-slate-100">
+                <canvas id="canvas-card-${book.id}" width="180" height="200" class="w-full h-full object-contain"></canvas>
+                
+                <!-- Badge Tags -->
+                <div class="absolute top-2 left-2 flex gap-1">
+                  <span class="bg-amber-400 text-slate-900 text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-sm">
+                    ${book.category}
+                  </span>
+                </div>
+
+                <!-- Favorite Button -->
+                <button class="btn-fav-card absolute top-2 right-2 p-2 bg-white/80 hover:bg-white text-rose-500 rounded-xl shadow-sm transition-transform active:scale-90" data-id="${book.id}">
+                  <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart text-sm"></i>
+                </button>
+              </div>
+
+              <!-- Title & Meta -->
+              <h4 class="text-lg font-bold text-slate-800 font-heading leading-tight mb-1 group-hover:text-amber-600 transition-colors">
+                ${book.title}
+              </h4>
+              <p class="text-xs text-slate-400 font-medium mb-2">Oleh ${book.author}</p>
+              <p class="text-xs text-slate-600 line-clamp-2 mb-4 leading-relaxed">${book.synopsis}</p>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between text-[11px] font-semibold text-slate-500 mb-3 pt-2 border-t border-slate-100">
+                <span><i class="fa-solid fa-child text-sky-500"></i> ${book.ageGroup}</span>
+                <span><i class="fa-solid fa-clock text-emerald-500"></i> ${book.readTime}</span>
+              </div>
+
+              <div class="flex gap-2">
+                <button class="btn-read-now flex-1 py-2.5 bg-amber-400 hover:bg-amber-500 active:scale-95 text-slate-900 font-bold rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5" data-id="${book.id}">
+                  <i class="fa-solid fa-book-open"></i>
+                  <span>Baca</span>
+                </button>
+                <button class="btn-detail-book p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs transition-all" data-id="${book.id}" title="Detail Synopsis">
+                  <i class="fa-solid fa-circle-info"></i>
+                </button>
+              </div>
+            </div>
+          `;
+
+          grid.appendChild(card);
+
+          // Virtual Wooden Shelf under each grid row
+          if ((idx + 1) % 3 === 0 || idx === filtered.length - 1) {
+            const shelf = document.createElement('div');
+            shelf.className = 'col-span-full wooden-shelf mb-4 hidden sm:block';
+            grid.appendChild(shelf);
+          }
+
+          // Render canvas cover
+          setTimeout(() => {
+            const canvas = document.getElementById(`canvas-card-${book.id}`);
+            drawBookCover(canvas, book);
+          }, 10);
+        });
+
+        // Attach Event Listeners to rendered cards
+        document.querySelectorAll('.btn-fav-card').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleFavorite(btn.dataset.id);
+          });
+        });
+
+        document.querySelectorAll('.btn-read-now').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const book = BOOKS_DATA.find(b => b.id === btn.dataset.id);
+            openReaderModal(book);
+          });
+        });
+
+        document.querySelectorAll('.btn-detail-book').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const book = BOOKS_DATA.find(b => b.id === btn.dataset.id);
+            openDetailModal(book);
+          });
+        });
+      }
+
+
+      // ================= 7. BOOK DETAIL MODAL =================
+      let currentSelectedBook = null;
+
+      function openDetailModal(book) {
+        playUiClickSound();
+        currentSelectedBook = book;
+
+        document.getElementById('detail-title').textContent = book.title;
+        document.getElementById('detail-author').textContent = `Oleh ${book.author}`;
+        document.getElementById('detail-category').textContent = book.category;
+        document.getElementById('detail-age').textContent = book.ageGroup;
+        document.getElementById('detail-time').textContent = book.readTime;
+        document.getElementById('detail-synopsis').textContent = book.synopsis;
+
+        const isFav = favorites.includes(book.id);
+        const favBtn = document.getElementById('btn-fav-modal');
+        favBtn.innerHTML = `<i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart text-lg"></i>`;
+
+        const canvas = document.getElementById('canvas-detail-cover');
+        drawBookCover(canvas, book);
+
+        const modal = document.getElementById('modal-detail');
+        modal.classList.remove('hidden');
+        modal.classList.add('modal-active');
+      }
+
+      function closeDetailModal() {
+        playUiClickSound();
+        const modal = document.getElementById('modal-detail');
+        modal.classList.add('hidden');
+        modal.classList.remove('modal-active');
+      }
+
+      document.getElementById('btn-close-detail').addEventListener('click', closeDetailModal);
+      document.getElementById('btn-read-modal').addEventListener('click', () => {
+        closeDetailModal();
+        if (currentSelectedBook) openReaderModal(currentSelectedBook);
+      });
+      document.getElementById('btn-fav-modal').addEventListener('click', () => {
+        if (currentSelectedBook) {
+          toggleFavorite(currentSelectedBook.id);
+          openDetailModal(currentSelectedBook); // Refresh heart status
+        }
+      });
+
+
+      // ================= 8. FLIPBOOK READER ENGINE =================
+      let pageFlipInstance = null;
+      let narrationEnabled = true;
+
+      function openReaderModal(book) {
+        playUiClickSound();
+        currentSelectedBook = book;
+
+        document.getElementById('reader-book-title').textContent = book.title;
+        const modal = document.getElementById('modal-reader');
+        modal.classList.remove('hidden');
+        modal.classList.add('modal-active');
+
+        // Build Pages HTML dynamically
+        const container = document.getElementById('flipbook-container');
+        container.innerHTML = '';
+
+        book.texts.forEach((text, i) => {
+          const page = document.createElement('div');
+          
+          if (i === 0) {
+            // Cover Page
+            page.className = 'page page-hard bg-gradient-to-br from-amber-300 via-orange-300 to-amber-400 text-slate-800';
+            page.innerHTML = `
+              <div class="page-content flex flex-col justify-between items-center text-center border-4 border-dashed border-white/60 rounded-xl m-1">
+                <div>
+                  <span class="inline-block px-3 py-1 bg-white/80 text-orange-600 rounded-full text-[10px] font-bold uppercase mb-2">Buku Digital</span>
+                  <h2 class="text-2xl font-extrabold text-amber-950 font-heading leading-tight">${book.title}</h2>
+                </div>
+                <canvas id="reader-canvas-p${i}" width="280" height="200" class="rounded-xl border-2 border-white shadow-sm my-auto bg-sky-100 max-w-full h-auto"></canvas>
+                <p class="text-xs font-semibold text-amber-900/80">Oleh ${book.author}</p>
+              </div>
+            `;
+          } else if (i === book.texts.length - 1) {
+            // Back Cover Page
+            page.className = 'page page-hard bg-gradient-to-br from-indigo-500 via-purple-600 to-indigo-700 text-white';
+            page.innerHTML = `
+              <div class="page-content flex flex-col justify-between items-center text-center border-4 border-dashed border-white/40 rounded-xl m-1">
+                <i class="fa-solid fa-heart text-rose-400 text-3xl mb-2 animate-bounce"></i>
+                <h3 class="text-xl font-bold font-heading text-amber-200">Tamat</h3>
+                <p class="text-xs italic text-indigo-100 leading-relaxed bg-white/10 p-3 rounded-xl">${text}</p>
+                <button id="btn-restart-reading" class="py-2.5 px-6 bg-amber-400 text-slate-900 font-bold rounded-xl text-xs shadow-md">
+                  <i class="fa-solid fa-rotate-left mr-1"></i> Baca Lagi
+                </button>
+              </div>
+            `;
+          } else {
+            // Content Pages
+            const isRight = i % 2 === 0;
+            page.className = `page ${isRight ? 'paper-shadow-left' : 'paper-shadow-right'}`;
+            page.innerHTML = `
+              <div class="page-content flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="text-[10px] font-bold px-2 py-0.5 bg-amber-100 text-amber-700 rounded-md">Halaman ${i}</span>
+                  <span class="text-[10px] text-slate-400">${book.category}</span>
+                </div>
+                <canvas id="reader-canvas-p${i}" width="280" height="180" class="rounded-xl border border-slate-200 bg-amber-50 shadow-sm my-1 max-w-full h-auto"></canvas>
+                <div class="bg-amber-50/80 p-2.5 rounded-xl border border-amber-200/60 text-slate-700 text-xs leading-relaxed custom-scroll max-h-28 overflow-y-auto">
+                  ${text}
+                </div>
+              </div>
+            `;
+          }
+          container.appendChild(page);
+        });
+
+        // Initialize StPageFlip
+        if (pageFlipInstance) pageFlipInstance.destroy();
+
+        pageFlipInstance = new St.PageFlip(container, {
+          width: 320,
+          height: 440,
+          size: "fixed",
+          minWidth: 260,
+          maxWidth: 380,
+          minHeight: 360,
+          maxHeight: 520,
+          maxShadowOpacity: 0.4,
+          showCover: true,
+          mobileScrollSupport: false
+        });
+
+        pageFlipInstance.loadFromHTML(document.querySelectorAll('#flipbook-container .page'));
+
+        // Render Canvases for pages
+        book.texts.forEach((_, i) => {
+          setTimeout(() => {
+            const canvas = document.getElementById(`reader-canvas-p${i}`);
+            if (canvas) drawReaderPageCanvas(canvas, book, i);
+          }, 30);
+        });
+
+        // Generate Dots
+        const dotsContainer = document.getElementById('reader-page-dots');
+        dotsContainer.innerHTML = '';
+        const total = pageFlipInstance.getPageCount();
+        for (let d = 0; d < total; d++) {
+          const dot = document.createElement('div');
+          dot.className = `h-1.5 rounded-full transition-all ${d === 0 ? 'w-4 bg-amber-500' : 'w-1.5 bg-slate-300'}`;
+          dot.id = `reader-dot-${d}`;
+          dotsContainer.appendChild(dot);
+        }
+
+        // Attach Reader Event Handlers
+        pageFlipInstance.on('flip', (e) => {
+          playPageFlipSound();
+          updateReaderUI(e.data, total);
+          if (narrationEnabled) speakPageText(book.texts[e.data]);
+        });
+
+        updateReaderUI(0, total);
+        if (narrationEnabled) speakPageText(book.texts[0]);
+
+        // Restart listener
+        const btnRestart = document.getElementById('btn-restart-reading');
+        if (btnRestart) {
+          btnRestart.addEventListener('click', () => pageFlipInstance.flip(0));
+        }
+      }
+
+      function drawReaderPageCanvas(canvas, book, pageIdx) {
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        if (book.id === 'miko-cat') {
+          // Dedicated Miko Story Illusts
+          if (pageIdx === 0) {
+            ctx.fillStyle = '#bae6fd';
+            ctx.fillRect(0, 0, w, h);
+            drawSimpleCat(ctx, w/2, h/2 + 10, '#f97316');
+          } else if (pageIdx === 1) {
+            // Rainy street
+            ctx.fillStyle = '#cbd5e1';
+            ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = '#d97706';
+            ctx.fillRect(30, h - 60, 80, 50); // Box
+            drawSimpleCat(ctx, w - 80, h - 40, '#ea580c');
+          } else if (pageIdx === 2) {
+            // Leo meets cat
+            ctx.fillStyle = '#e0f2fe';
+            ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = '#86efac';
+            ctx.beginPath();
+            ctx.ellipse(w/2, h, w, 40, 0, 0, Math.PI * 2);
+            ctx.fill();
+            drawSimpleCat(ctx, w/2 + 30, h - 30, '#f97316');
+          } else {
+            // Happy home
+            ctx.fillStyle = '#fef3c7';
+            ctx.fillRect(0, 0, w, h);
+            drawSimpleCat(ctx, w/2, h/2, '#f97316');
+          }
+        } else {
+          // Generic colorful page illustration
+          ctx.fillStyle = book.coverBg || '#fef08a';
+          ctx.fillRect(0, 0, w, h);
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(w/2, h/2, 35, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#64748b';
+          ctx.font = 'bold 20px Quicksand';
+          ctx.textAlign = 'center';
+          ctx.fillText(`Halaman ${pageIdx}`, w/2, h/2 + 6);
+        }
+      }
+
+      function updateReaderUI(pageIdx, total) {
+        const pageNumText = document.getElementById('reader-page-num');
+        const btnPrev = document.getElementById('btn-prev-reader');
+        const btnNext = document.getElementById('btn-next-reader');
+
+        if (pageIdx === 0) pageNumText.textContent = "Sampul";
+        else if (pageIdx === total - 1) pageNumText.textContent = "Selesai";
+        else pageNumText.textContent = `Halaman ${pageIdx} dari ${total - 2}`;
+
+        btnPrev.disabled = pageIdx === 0;
+        btnNext.disabled = pageIdx === total - 1;
+
+        for (let d = 0; d < total; d++) {
+          const dot = document.getElementById(`reader-dot-${d}`);
+          if (dot) {
+            dot.className = d === pageIdx ? 'h-1.5 w-4 bg-amber-500 rounded-full transition-all' : 'h-1.5 w-1.5 bg-slate-300 rounded-full transition-all';
+          }
+        }
+      }
+
+      function closeReaderModal() {
+        playUiClickSound();
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        const modal = document.getElementById('modal-reader');
+        modal.classList.add('hidden');
+        modal.classList.remove('modal-active');
+      }
+
+      document.getElementById('btn-close-reader').addEventListener('click', closeReaderModal);
+      document.getElementById('btn-prev-reader').addEventListener('click', () => pageFlipInstance && pageFlipInstance.flipPrev());
+      document.getElementById('btn-next-reader').addEventListener('click', () => pageFlipInstance && pageFlipInstance.flipNext());
+
+
+      // ================= 9. SPEECH NARRATION ENGINE =================
+      function speakPageText(text) {
+        if (!('speechSynthesis' in window) || !narrationEnabled) return;
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'id-ID';
+        utterance.rate = 0.9;
+        utterance.pitch = 1.1;
+
+        window.speechSynthesis.speak(utterance);
+      }
+
+      document.getElementById('btn-narration-reader').addEventListener('click', () => {
+        narrationEnabled = !narrationEnabled;
+        const btn = document.getElementById('btn-narration-reader');
+        if (narrationEnabled) {
+          btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-500 text-white hover:bg-sky-600 transition-all';
+          btn.innerHTML = '<i class="fa-solid fa-volume-high"></i><span class="hidden sm:inline">Narasi: ON</span>';
+          if (currentSelectedBook && pageFlipInstance) {
+            speakPageText(currentSelectedBook.texts[pageFlipInstance.getCurrentPageIndex()]);
+          }
+        } else {
+          window.speechSynthesis.cancel();
+          btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-600 text-slate-200 hover:bg-slate-500 transition-all';
+          btn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i><span class="hidden sm:inline">Narasi: OFF</span>';
+        }
+      });
+
+      document.getElementById('btn-read-page-reader').addEventListener('click', () => {
+        if (currentSelectedBook && pageFlipInstance) {
+          speakPageText(currentSelectedBook.texts[pageFlipInstance.getCurrentPageIndex()]);
+        }
+      });
+
+      document.getElementById('btn-fullscreen-reader').addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(err => console.log(err));
+        } else {
+          if (document.exitFullscreen) document.exitFullscreen();
+        }
+      });
+
+
+      // ================= 10. GLOBAL CONTROLS & LISTENERS =================
+      // Search Input
+      document.getElementById('input-search').addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderBooksGrid();
+      });
+
+      // Favorites Toggle Button Top Bar
+      document.getElementById('btn-show-favorites').addEventListener('click', () => {
+        playUiClickSound();
+        showingFavoritesOnly = !showingFavoritesOnly;
+        const btn = document.getElementById('btn-show-favorites');
+        if (showingFavoritesOnly) {
+          btn.className = 'flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-xs md:text-sm bg-rose-500 text-white shadow-md active:scale-95 transition-all';
+        } else {
+          btn.className = 'flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-xs md:text-sm bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 active:scale-95 transition-all shadow-sm';
+        }
+        renderBooksGrid();
+      });
+
+      // Global Sound Effects Toggle
+      document.getElementById('btn-sound-effects').addEventListener('click', () => {
+        soundEnabled = !soundEnabled;
+        const icon = document.getElementById('sound-icon');
+        icon.className = soundEnabled ? 'fa-solid fa-volume-high text-base' : 'fa-solid fa-volume-xmark text-base';
+        if (soundEnabled) playUiClickSound();
+      });
+
+      // Hero Banner Featured Buttons
+      const featuredBook = BOOKS_DATA[0];
+      document.getElementById('btn-read-featured').addEventListener('click', () => openReaderModal(featuredBook));
+      document.getElementById('btn-detail-featured').addEventListener('click', () => openDetailModal(featuredBook));
+
+
+      // Initial Setup
+      updateFavCountBadge();
+      renderCategories();
+      renderBooksGrid();
+
+    });
+  </script>
+</body>
+</html>
